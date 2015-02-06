@@ -15,3 +15,8 @@ db.define_table('my_order',
                 Field('ship_fee', 'double'),
                 Field('if_double_point','boolean')
                )
+
+
+def selectAllOrder():
+    query = (db.my_order.id>0)
+    return db(query).select()

@@ -1,3 +1,115 @@
 {{extend 'layout.html'}}
+
 <h1>This is the order/new.html template</h1>
-{{=BEAUTIFY(response._vars)}}
+
+<form class="pure-form pure-form-stacked">
+     <fieldset>
+        <legend>Customer</legend>
+            <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="customer-name">Customer Name</label>
+                <input id="customer-name" type="text" required>
+            </div>
+
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="recipient-name">Recipient Name</label>
+                <input id="recipient-name" type="email" required>
+            </div>
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="comment">Comment</label>
+                <input id="comment" type="email">
+            </div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Product</legend>
+        <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="item">Item#</label>
+                <input id="item" type="text" required>
+            </div>
+        </div>
+        <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="item">Gifts</label>
+                <input id="item" type="text">
+            </div>
+        </div>
+        <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="item">RRP</label>
+                <input id="item" type="number" requird>
+            </div>
+        </div>
+         <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="item">Sold Price</label>
+                <input id="item" type="text" required>
+            </div>
+        </div>
+         <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="item">Reward Points</label>
+                 <select id="reward"><option></option></select>
+            </div>
+        </div>
+   </fieldset>
+    <fieldset>
+        <legend>Shipment</legend>
+            <div class="pure-g">
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="ship-date">Ship Date</label>
+                <input id="ship-date" type="date" required>
+            </div>
+
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="ship-company">Company</label>
+                <input id="ship-company" type="text" required>
+            </div>
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="tracking">Tracking</label>
+                <input id="tracking" type="text" required>
+            </div>
+            <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <label for="ship-rate">Ship Rate</label>
+                <input id="ship-rate" type="number" required>
+            </div>
+                <label for="tracking">Destination</label>
+                <div class="pure-u-1-1 pure-u-md-1-3 pure-u-lg-1-3">
+                <select id="destination"><option></option></select>
+                </div>
+    </fieldset>
+
+    <button type="submit" class="pure-button">Save Order</button>
+    </fieldset>
+</form>
+
+
+<script>
+
+
+   var options = ['北京', '上海', '广东', '江苏', '重庆','四川','陕西','山东',  '天津','江西','浙江',
+                       '安徽', '河南', '山西','河北', '香港',  '湖南',
+                       '福建', '云南', '广西', '海南',  '湖北',  '辽宁',
+                       '台湾', '黑龙江', '内蒙古', '澳门', '贵州', '甘肃', '青海', '新疆', '西藏', '吉林', '宁夏'];
+
+   /* Remove all options from the select list */
+    var select = document.getElementById("destination");
+    for(var i = 0; i < options.length; i++) {
+        var opt = options[i];
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        select.appendChild(el);
+    }
+
+    var select2 = document.getElementById("reward");
+    {{for r in rewardOptions:}}
+        var opt = '{{=r.name}}';
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        select2.appendChild(el);
+    {{pass}}
+
+</script>

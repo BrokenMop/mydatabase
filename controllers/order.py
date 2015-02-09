@@ -8,4 +8,11 @@ def list():
     return dict(message="hello from order.py")
 
 def new():
+    response.files.insert(0,URL('static','css/pure-form.css'))
+
+    rewardOptions = selectAllRewardOptions()
+
+    return dict(message="hello from order.py", rewardOptions = rewardOptions)
+
+def save():
     return dict(message="hello from order.py")

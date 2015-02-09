@@ -3,8 +3,8 @@ db.define_table('order_status',
                 )
 
 db.define_table('reward_points',
-                Field('Reward'),
-                Field('ratio')
+                Field('name'),
+                Field('ratio', 'double')
                 )
 
 db.define_table('my_order',
@@ -26,8 +26,16 @@ db.define_table('my_order',
                 Field('reward','reference reward_points')
                )
 
+if db(db.reward_points).isempty():
+    db.reward_points.insert(name='Regular', ratio= 0.1)
+    db.reward_points.insert(name='Double Points', ratio= 0.2)
+
 
 
 def selectAllOrder():
     query = (db.my_order.id>0)
+    return db(query).select()
+
+def selectAllRewardOptions():
+    query = (db.reward_points.id>0)
     return db(query).select()

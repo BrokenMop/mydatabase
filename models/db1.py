@@ -9,6 +9,7 @@ db.define_table('reward_points',
 
 db.define_table('my_order',
                 Field('item'),
+                Field('quantity'),
                 Field('gift'),
                 Field('buyer'),
                 Field('recipient'),
@@ -27,8 +28,8 @@ db.define_table('my_order',
                )
 
 if db(db.reward_points).isempty():
-    db.reward_points.insert(name='Regular', ratio= 0.1)
-    db.reward_points.insert(name='Double Points', ratio= 0.2)
+    db.reward_points.insert(name='Regular', ratio= 0.05)
+    db.reward_points.insert(name='Double Points', ratio= 0.1)
 
 
 

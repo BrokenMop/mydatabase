@@ -6,3 +6,6 @@ def list():
     response.files.insert(0,'http://netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css')
     allOrders = selectAllOrder()
     return dict(message="hello from order.py")
+
+def new():
+    return dict(message="hello from order.py")

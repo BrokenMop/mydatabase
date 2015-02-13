@@ -1,3 +1,11 @@
 {{extend 'layout.html'}}
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<button class="pure-button" onclick="location.href='{{=URL('order','list')}}'">
+    <i class="fa fa-bars"></i>
+    Orders
+</button>
 
-{{=A('Order List', _href=URL('order','list'))}}
+<button class="pure-button" onclick="location.href='{{=URL('stat','general')}}'">
+    <i class="fa fa-usd"></i>
+    Cost
+</button>

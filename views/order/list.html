@@ -1,29 +1,126 @@
 {{extend 'layout.html'}}
+<h2>Order List</h2>
+<div class="row-fluid">
+    <div class="span2"> <strong>Not Shipped</strong> <span class="badge badge-inverse">{{=notShipped}}</span></div>
+    <div class="span2"> <strong>Passing Customs</strong> <span class="badge badge-important">{{=customs}}</span></div>
+    <div class="span2"> <strong>Being Delivered</strong> <span class="badge badge-warning">{{=local}}</span></div>
+    <div class="span2"> <strong>Delivered</strong> <span class="badge badge-info">{{=delivered}}</span></div>
+    <div class="span2"> <strong>Confirmed</strong> <span class="badge badge-default">{{=confirmed}}</span></div>
+    <div class="span2"> <strong>Complete</strong> <span class="badge badge-success">{{=complete}}</span></div>
+</div>
 
-<h2>WATable</h2>
 
-    <h4>Example 2. Lots of options supplied</h4>{{=FORM(INPUT(_type='submit', _value='New Order'), _action=URL('new'), _value='b')}}
+<form >
+  <div class="row-fluid">
+       <div class="span1">
+             <div class="input-prepend">
+                <button type="button" class="btn" onclick="location.href='{{=URL('new')}}'">New <i class="icon-plus icon-black"></i></button>
+            </div>
+      </div>
+        <div class="span6">
+            <input type="text" class="input-medium search-query"><button type="submit" class="btn">Search</button>
+        </div>
+    </div>
+</form>
+
     <div id="example2" style="width:auto"></div>
 
     <script type="text/javascript">
+
+        function colorEarning(percentage){
+            if (Number(percentage) >= 35){
+                return 'superhigh';
+            }
+            if (Number(percentage) >= 30){
+                return 'high';
+            }
+            if (Number(percentage) >= 25){
+                return 'middle';
+            }
+            if (Number(percentage) >= 20 ){
+                return 'low';
+            }else{
+                return 'superlow';
+            }
+        }
+        
+
+        function calculateTotalCost(quantity, rrp, shipRate, taxRate){
+            var cost =Number(rrp) * (1 + Number(taxRate)/100.0) *quantity + Number(shipRate);
+            cost = parseFloat(Math.round(cost * 100) / 100).toFixed(2);
+            return (cost).toString();
+        }
+
+        function calculateEarning(quantity, rrp, shipRate, taxRate, exchangRate, price){
+            var cost = Number(rrp) * (1 + Number(taxRate)/100.0) *quantity+ Number(shipRate);
+            cost = Math.round(cost * 100) / 100;
+            var priceUSD = Number(price)/Number(exchangRate);
+            priceUSD = Math.round(priceUSD * 100) / 100;
+            var earning = priceUSD - cost;
+            earning = parseFloat(Math.round(earning * 100) / 100).toFixed(2);
+            return earning
+        }
+
+        function calculatePoints(quantity, rrp, rewardRatio){
+            var points = Number(rrp)*Number(rewardRatio) * quantity;
+            points = parseFloat(Math.round(points * 100) / 100).toFixed(2);
+            return points
+        }
+
+        function shippingPeriod(date1, date2){
+            var date1data = date1.split('-');
+            var date1 =  new Date(date1data[0], date1data[1]-1, date1data[2]);
+            var date2data = date2.split('-');
+            var date2 =  new Date(date2data[0], date2data[1]-1, date2data[2]);
+            return parseInt(((date2-date1)/(1000*60*60*24)).toString());
+        }
+
+        function shippingPeriodToToday(date1){
+            var date1data = date1.split('-');
+            var date1 =  new Date(date1data[0], date1data[1]-1, date1data[2]);
+            var date2 =  new Date();
+            return parseInt(((date2-date1)/(1000*60*60*24)).toString());
+        }
+
+        function statusColor(status){
+            if (status == 'Customs'){
+                return "<span class='label label-important'>待检中</span>";
+            }
+            if (status == 'Not Shipped'){
+                return "<span class='label label-inverse'>未发货</span>";
+            }
+            if (status == 'Local'){
+                return "<span class='label label-warning'>投递中</span>";
+            }
+            if (status == 'Delivered'){
+                return "<span class='label label-info'>已妥投</span>";
+            }
+            if (status == 'Confirmed'){
+                return "<span class='label label-default'>已确认</span>";
+            }
+            if (status == 'Complete'){
+                 return "<span class='label label-success'>已完成</span>";
+            }
+     }
+
         $(document).ready( function() {
+
+
                 //Second example that shows all options.
                 var waTable = $('#example2').WATable({
                 //data: generateSampleData(100), //Initiate with data if you already have it
                 debug:false,                //Prints some debug info to console
                 dataBind: true,             //Auto-updates table when changing data row values. See example below. (Note. You need a column with the 'unique' property)
-                pageSize: 50,                //Initial pagesize
-                pageSizePadding: true,      //Pads with empty rows when pagesize is not met
-                //transition: 'slide',       //Type of transition when paging (bounce, fade, flip, rotate, scroll, slide).Requires https://github.com/daneden/animate.css.
-                //transitionDuration: 0.2,    //Duration of transition in seconds.
-                filter: true,               //Show filter fields
+                pageSize: 100,                //Initial pagesize
+                pageSizePadding: false,      //Pads with empty rows when pagesize is not met
+                filter: false,               //Show filter fields
                 sorting: true,              //Enable sorting
                 sortEmptyLast:true,         //Empty values will be shown last
                 columnPicker: true,         //Show the columnPicker button
-                pageSizes: [10,20,30,40,50,60,80,100],  //Set custom pageSizes. Leave empty array to hide button.
+                pageSizes: [10,20,30,40,50,60,80,100,120,150,200],  //Set custom pageSizes. Leave empty array to hide button.
                 hidePagerOnEmpty: true,     //Removes the pager if data is empty.
                 checkboxes: false,           //Make rows checkable. (Note. You need a column with the 'unique' property)
-                checkAllToggle:true,        //Show the check-all toggle
+                checkAllToggle:false,        //Show the check-all toggle
                 preFill: true,              //Initially fills the table with empty rows (as many as the pagesize).
                 //url: '/someWebservice'    //Url to a webservice if not setting data manually as we do in this example
                 //urlData: { report:1 }     //Any data you need to pass to the webservice
@@ -61,14 +158,17 @@
                     console.log(data);            //'this' keyword also holds the html table element.
                 },
                 rowClicked: function(data) {      //Fires when a row is clicked (Note. You need a column with the 'unique' property).
-                    console.log('row clicked');   //data.event holds the original jQuery event.
-                    console.log(data);            //data.row holds the underlying row you supplied.
-                                                  //data.column holds the underlying column you supplied.
-                                                  //data.checked is true if row is checked. (Set to false/true to have it unchecked/checked)
-                                                  //'this' keyword holds the clicked element.
+                    data.event.preventDefault();
                     if (data.column) {
-                        data.event.preventDefault();
-                        alert('You clicked column:' + data.column.column + ' with value:' + data.row[data.column.column]);
+                        id = data.row["orderID"];
+                        buyer = data.row["buyer"];
+                        recipient = data.row["recipient"];
+                        item = data.row["item"];
+                        tracking = data.row["tracking"];
+                        if (confirm("Want to edit this order? \nItem: ".concat(item).concat("\nCustomer:  ").concat(buyer).concat("\nRecipient: ").concat(recipient).concat("\nTracking: ").concat(tracking)) == true) {
+                             window.location.href = 'edit?order-id='.concat(id);
+                        }
+
                     }
                 },
                 columnClicked: function(data) {    //Fires when a column is clicked
@@ -89,7 +189,7 @@
 
 
             //Generate some data
-            var data = generateSampleData(400);
+            var data = ReadDate();
             waTable.setData(data);  //Sets the data.
             //waTable.setData(data, true); //Sets the data but prevents any previously set columns from being overwritten
             //waTable.setData(data, false, false); //Sets the data and prevents any previously checked rows from being reset
@@ -138,7 +238,7 @@
         });
 
         //Generates some data.
-        function generateSampleData(limit) {
+        function ReadDate() {
 
             //First define the columns
             var cols = {
@@ -147,100 +247,115 @@
                     type: "number", //The type. Possible are string, number, bool, date(in milliseconds).
                     friendly: "Order ID",  //Name that will be used in header. Can also be any html as shown here.
                     sorting: true, // allow sorting
-                    format: "<a href='#' target='_blank'>{0}</a>",  //Used to format the data anything you want. Use {0} as placeholder for the actual data.
+                    format: "<a href='detail?id={0}'> {0}</a>",  //Used to format the data anything you want. Use {0} as placeholder for the actual data.
                     unique: true,  //This is required if you want checkable rows, databinding or to use the rowClicked callback. Be certain the values are really unique or weird things will happen.
-                    sortOrder: "asc", //Data will initially be sorted by this column. Possible are "asc" or "desc"
+                    sortOrder: "desc", //Data will initially be sorted by this column. Possible are "asc" or "desc"
                 },
                 item: {
                     index: 2,
                     type: "string",
                     friendly: "Set#",
                     sorting: true, // allow sorting
-                    cls: "blue, anotherClass", //apply some css classes
+                },
+                quantity: {
+                    index: 3,
+                    type: "number",
+                    friendly: "Quantity",
+                    sorting: true, // allow sorting
                 },
                 gift: {
-                    index: 3,
+                    index: 4,
                     type: "string",
                     friendly: "gift",
                     sorting: true, // allow sorting
                     filter: false //Removes filter field for this column
                 },
                 buyer: {
-                    index: 4,
+                    index: 5,
                     type: "string",
-                    friendly: "Customer Name",
+                    friendly: "Customer",
                     sorting: false // allow sorting
                 },
                 recipient: {
-                    index: 5,
+                    index: 6,
                     type: "string",
-                    friendly: "Recipient Name",
+                    friendly: "Recipient",
                     sorting: false
                 },
                 shippingDate: {
-                    index: 6,
-                    type: "date",
+                    index: 7,
+                    type: "string",
                     friendly: "Shipping Date"
                 },
                 receiveDate: {
-                    index: 7,
-                    type: "date", //Don't forget dates are expressed in milliseconds
+                    index: 8,
+                    type: "string", //Don't forget dates are expressed in milliseconds
                     friendly: "Receive Date"
                 },
                 company: {
-                    index: 8,
+                    index: 9,
                     type: "string", //Don't forget dates are expressed in milliseconds
-                    friendly: "Shipping"
+                    friendly: "Company"
                 },
                 tracking: {
-                    index: 9,
+                    index: 10,
                     type: "string", //Don't forget dates are expressed in milliseconds
                     friendly: "Tracking#"
                 },
                 dest: {
-                    index: 10,
+                    index: 11,
                     type: "string", //Don't forget dates are expressed in milliseconds
-                    friendly: "Destination"
+                    friendly: "City"
                 },
                 status: {
-                    index: 11,
+                    index: 12,
                     type: "string", //Don't forget dates are expressed in milliseconds
                     friendly: "Status"
                 },
                 period: {
-                    index: 12,
-                    type: "string", //Don't forget dates are expressed in milliseconds
+                    index: 13,
+                    type: "number", //Don't forget dates are expressed in milliseconds
                     friendly: "Period"
                 },
                 comment: {
-                    index: 13,
+                    index: 14,
                     type: "string", //Don't forget dates are expressed in milliseconds
                     friendly: "Comment"
                 },
                 rrp: {
-                    index: 14,
+                    index: 15,
                     type: "number", //Don't forget dates are expressed in milliseconds
-                    friendly: "RRP$"
+                    friendly: "RRP $"
                 },
                 shippingRate: {
-                    index: 14,
+                    index: 16,
                     type: "number", //Don't forget dates are expressed in milliseconds
-                    friendly: "Shipping Rate$"
+                    friendly: "Shipping Rate $"
+                },
+                totalCost: {
+                    index: 17,
+                    type: "number", //Don't forget dates are expressed in milliseconds
+                    friendly: "Total Cost $"
                 },
                 price: {
-                    index: 14,
+                    index: 18,
                     type: "number", //Don't forget dates are expressed in milliseconds
                     friendly: "Price￥"
                 },
                 earning: {
-                    index: 15,
+                    index: 19,
                     type: "number", //Don't forget dates are expressed in milliseconds
-                    friendly: "Earning$"
+                    friendly: "Earning $"
+                },
+                percentage: {
+                    index: 20,
+                    type: "string", //Don't forget dates are expressed in milliseconds
+                    friendly: "E / C %"
                 },
                 reward: {
-                    index: 15,
-                    type: "number", //Don't forget dates are expressed in milliseconds
-                    friendly: "Reward$"
+                    index: 21,
+                    type: "string", //Don't forget dates are expressed in milliseconds
+                    friendly: "Reward"
                 },
             };
 
@@ -255,37 +370,72 @@
             */
             var rows = [];
             var i = 1;
-            while(i <= limit)
-            {
-                //We leave some fields intentionally undefined, so you can see how sorting/filtering works with these.
+            {{for o in orders:}}
                 var row = {};
-                row.orderID       = i;
-                row.item          = Math.floor(Math.random() * 89999) + 10000;
-                row.gift          = Math.floor(Math.random() * 89999) + 10000;
-                row.buyer         = elfName();
-                row.recipient     = elfName();
-                row.shippingDate  = Date.now();
-                row.receiveDate   = Date.now();
-                row.company       = '顺邦';
-                row.tracking      = 'sf030000000us';
-                row.dest        = '北京';
-                row.status        = '完成';
-                row.period      = '20';
-                row.comment      = '';
-                row.rrp      = Math.random() * 300;
-                row.shippingRate = Math.floor(10 + Math.random() * 50);
-                row.price = Math.floor(100 + Math.random() * 4000);
-                row.earning = Math.floor(5 + Math.random() * 90);
-                row.reward = Math.floor(1 + Math.random() * 29);
-                row["row-checkable"] = i % 4 != 0; //disable checking for every 4th row
-                row["row-checked"]   = i % 3 == 0; //pre check every 3rd row
-                row["row-cls"]       = i % 3 == 0 ? "gray, anotherClass" : ""; //apply some row css classes for every 3rd row
+                row.orderID       = '{{=o.id}}';
+                row.item          = '{{=o.item}}';
+                row.quantity      = '{{=o.quantity}}';
+                row.gift          = '{{=o.gifts_info}}';
+                if ('{{=o.gifts_info}}'){
+                     row.giftCls = "orange";
+                }
+                row.buyer         = '{{=o.customer_name}}';
+                row.recipient     = '{{=o.recipient_name}}';
+                row.shippingDate = '{{=o.ship_date}}'=="None" ? "" : "{{=o.ship_date}}";
+                row.receiveDate = '{{=o.receive_date}}'=="None" ? "" : "{{=o.receive_date}}";
 
-                row.secret           = { "secret" : "foobar" }; //Add something else that you want later(ex in rowClicked event)
+                if ('{{=o.receive_date}}'=="None"){
+                    if ('{{=o.ship_date}}'=="None"){
+                        row.period = "";
+                    }else{
+                        row.period = shippingPeriodToToday('{{=o.ship_date}}');
+                    }
+                }else{
+                    if ('{{=o.ship_date}}'=="None"){
+                         row.period = "0";
+                    }else{
+                        row.period = shippingPeriod('{{=o.ship_date}}', '{{=o.receive_date}}');
+                    }
+
+                }
+                row.company       = '{{=o.ship_company}}';
+                row.tracking      = '{{=o.tracking}}';
+                row.dest        = '{{=o.order_destination}}';
+                row.status        = statusColor('{{=o.status.name}}');
+                row.comment      =  '{{=o.order_comment}}';
+                if ('{{=o.order_comment}}'){
+                     row.commentCls = "orange";
+                }
+                row.rrp      = '{{=o.rrp}}';
+                row.shippingRate = '{{=o.ship_rate}}';
+                var cost = calculateTotalCost('{{=o.quantity}}','{{=o.rrp}}','{{=o.ship_rate}}','{{=o.tax_rate}}');
+                row.totalCost = cost.toString().concat(Number('{{=o.quantity}}')>1 ? " ("+'{{=o.quantity}}'+")" : "");
+                row.price = '{{=o.price}}'.concat(Number('{{=o.quantity}}')>1 ? " ("+'{{=o.quantity}}'+")" : "");
+                var earning = calculateEarning('{{=o.quantity}}','{{=o.rrp}}','{{=o.ship_rate}}',
+                                               '{{=o.tax_rate}}','{{=o.exchange_rate}}','{{=o.price}}');
+                var points = calculatePoints('{{=o.quantity}}','{{=o.rrp}}','{{=o.reward.ratio}}');
+                if(row.status == "Not Shipped"){
+                    row.earning = "0";
+                    row.points = "0";
+                    row.percentage =  "0 %";
+                }else{
+                    row.earning =earning.toString();
+                    row.points = points.toString();
+                    var percentage = Number(earning) / Number(cost);
+                    percentage = Math.round(percentage * 100);
+                    row.percentage = percentage.toString().concat(" %");
+                    row.percentageCls = colorEarning(percentage);
+                }
+                row.reward = '{{=o.reward.name}}';
+              //  row["row-cls"]       = i % 3 == 0 ? "gray, anotherClass" : ""; //apply some row css classes for every 3rd row
+
+              //  row.secret           = { "secret" : "foobar" }; //Add something else that you want later(ex in rowClicked event)
 
                 rows.push(row);
                 i++;
-            }
+
+            {{pass}}
+
 
             //Create the returning object. Besides cols and rows, you can also pass any other object you would need later on.
             var data = {
@@ -299,29 +449,4 @@
             return data;
         }
 
-        //Helper function to generate names. Ignore this.
-        function elfName() {
-            var elf_male = new Array("Abardon", "Acaman", "Achard", "Ackmard", "Agon", "Agnar", "Abdun", "Aidan", "Airis", "Aldaren", "Alderman", "Alkirk", "Amerdan", "Anfarc", "Aslan", "Actar", "Atgur", "Atlin", "Aldan", "Badek", "Baduk", "Bedic", "Beeron", "Bein", "Bithon", "Bohl", "Boldel", "Bolrock", "Bredin", "Bredock", "Breen", "tristan", "Bydern", "Cainon", "Calden", "Camon", "Cardon", "Casdon", "Celthric", "Cevelt", "Chamon", "Chidak", "Cibrock", "Cipyar", "Colthan", "Connell", "Cordale", "Cos", "Cyton", "Daburn", "Dawood", "Dak", "Dakamon", "Darkboon", "Dark", "Darg", "Darmor", "Darpick", "Dask", "Deathmar", "Derik", "Dismer", "Dokohan", "Doran", "Dorn", "Dosman", "Draghone", "Drit", "Driz", "Drophar", "Durmark", "Dusaro", "Eckard", "Efar", "Egmardern", "Elvar", "Elmut", "Eli", "Elik", "Elson", "Elthin", "Elbane", "Eldor", "Elidin", "Eloon", "Enro", "Erik", "Erim", "Eritai", "Escariet", "Espardo", "Etar", "Eldar", "Elthen", "Elfdorn", "Etran", "Eythil", "Fearlock", "Fenrirr", "Fildon", "Firdorn", "Florian", "Folmer", "Fronar", "Fydar", "Gai", "Galin", "Galiron", "Gametris", "Gauthus", "Gehardt", "Gemedes", "Gefirr", "Gibolt", "Geth", "Gom", "Gosform", "Gothar", "Gothor", "Greste", "Grim", "Gryni", "Gundir", "Gustov", "Halmar", "Haston", "Hectar", "Hecton", "Helmon", "Hermedes", "Hezaq", "Hildar", "Idon", "Ieli", "Ipdorn", "Ibfist", "Iroldak", "Ixen", "Ixil", "Izic", "Jamik", "Jethol", "Jihb", "Jibar", "Jhin", "Julthor", "Justahl", "Kafar", "Kaldar", "Kelar", "Keran", "Kib", "Kilden", "Kilbas", "Kildar", "Kimdar", "Kilder", "Koldof", "Kylrad", "Lackus", "Lacspor", "Lahorn", "Laracal", "Ledal", "Leith", "Lalfar", "Lerin", "Letor", "Lidorn", "Lich", "Loban", "Lox", "Ludok", "Ladok", "Lupin", "Lurd", "Mardin", "Markard", "Merklin", "Mathar", "Meldin", "Merdon", "Meridan", "Mezo", "Migorn", "Milen", "Mitar", "Modric", "Modum", "Madon", "Mafur", "Mujardin", "Mylo", "Mythik", "Nalfar", "Nadorn", "Naphazw", "Neowald", "Nildale", "Nizel", "Nilex", "Niktohal", "Niro", "Nothar", "Nathon", "Nadale", "Nythil", "Ozhar", "Oceloth", "Odeir", "Ohmar", "Orin", "Oxpar", "Othelen", "Padan", "Palid", "Palpur", "Peitar", "Pendus", "Penduhl", "Pildoor", "Puthor", "Phar", "Phalloz", "Qidan", "Quid", "Qupar", "Randar", "Raydan", "Reaper", "Relboron", "Riandur", "Rikar", "Rismak", "Riss", "Ritic", "Ryodan", "Rysdan", "Rythen", "Rythorn", "Sabalz", "Sadaron", "Safize", "Samon", "Samot", "Secor", "Sedar", "Senic", "Santhil", "Sermak", "Seryth", "Seth", "Shane", "Shard", "Shardo", "Shillen", "Silco", "Sildo", "Silpal", "Sithik", "Soderman", "Sothale", "Staph", "Suktar", "zuth", "Sutlin", "Syr", "Syth", "Sythril", "Talberon", "Telpur", "Temil", "Tamilfist", "Tempist", "Teslanar", "Tespan", "Tesio", "Thiltran", "Tholan", "Tibers", "Tibolt", "Thol", "Tildor", "Tilthan", "Tobaz", "Todal", "Tothale", "Touck", "Tok", "Tuscan", "Tusdar", "Tyden", "Uerthe", "Uhmar", "Uhrd", "Updar", "Uther", "Vacon", "Valker", "Valyn", "Vectomon", "Veldar", "Velpar", "Vethelot", "Vildher", "Vigoth", "Vilan", "Vildar", "Vi", "Vinkol", "Virdo", "Voltain", "Wanar", "Wekmar", "Weshin", "Witfar", "Wrathran", "Waytel", "Wathmon", "Wider", "Wyeth", "Xandar", "Xavor", "Xenil", "Xelx", "Xithyl", "Yerpal", "Yesirn", "Ylzik", "Zak", "Zek", "Zerin", "Zestor", "Zidar", "Zigmal", "Zilex", "Zilz", "Zio", "Zotar", "Zutar", "Zytan");
-            var elf_female = new Array("Acele Acholate", "Ada", "Adiannon", "Adorra", "Ahanna", "Akara", "Akassa", "Akia", "Amara", "Amarisa", "Amarizi", "Ana", "Andonna", "Ariannona", "Arina", "Arryn", "Asada", "Awnia", "Ayne", "Basete", "Bathelie", "Bethel", "Brana", "Brynhilde", "Calene", "Calina", "Celestine", "Corda", "Enaldie", "Enoka", "Enoona", "Errinaya", "Fayne", "Frederika", "Frida", "Gvene", "Gwethana", "Helenia", "Hildandi", "Helvetica", "Idona", "Irina", "Irene", "Illia", "Irona", "Justalyne", "Kassina", "Kilia", "Kressara", "Laela", "Laenaya", "Lelani", "Luna", "Linyah", "Lyna", "Lynessa", "Mehande", "Melisande", "Midiga", "Mirayam", "Mylene", "Naria", "Narisa", "Nelena", "Nimaya", "Nymia", "Ochala", "Olivia", "Onathe", "Parthinia", "Philadona", "Prisane", "Rhyna", "Rivatha", "Ryiah", "Sanata", "Sathe", "Senira", "Sennetta", "Serane", "Sevestra", "Sidara", "Sidathe", "Sina", "Sunete", "Synestra", "Sythini", "zena", "Tabithi", "Tomara", "Teressa", "Tonica", "Thea", "Teressa", "Urda", "Usara", "Useli", "Unessa", "ursula", "Venessa", "Wanera", "Wellisa", "yeta", "Ysane", "Yve", "Yviene", "Zana", "Zathe", "Zecele", "Zenobe", "Zema", "Zestia", "Zilka", "Zoucka", "Zona", "Zyneste", "Zynoa");
-            var elf_surname = new Array("Abardon", "Acaman", "Achard", "Ackmard", "Agon", "Agnar", "Aldan", "Abdun", "Aidan", "Airis", "Aldaren", "Alderman", "Alkirk", "Amerdan", "Anfarc", "Aslan", "Actar", "Atgur", "Atlin", "Badek", "Baduk", "Bedic", "Beeron", "Bein", "Bithon", "Bohl", "Boldel", "Bolrock", "Bredin", "Bredock", "Breen", "tristan", "Bydern", "Cainon", "Calden", "Camon", "Cardon", "Casdon", "Celthric", "Cevelt", "Chamon", "Chidak", "Cibrock", "Cipyar", "Colthan", "Connell", "Cordale", "Cos", "Cyton", "Daburn", "Dawood", "Dak", "Dakamon", "Darkboon", "Dark", "Dark", "Darmor", "Darpick", "Dask", "Deathmar", "Derik", "Dismer", "Dokohan", "Doran", "Dorn", "Dosman", "Draghone", "Drit", "Driz", "Drophar", "Durmark", "Dusaro", "Eckard", "Efar", "Egmardern", "Elvar", "Elmut", "Eli", "Elik", "Elson", "Elthin", "Elbane", "Eldor", "Elidin", "Eloon", "Enro", "Erik", "Erim", "Eritai", "Escariet", "Espardo", "Etar", "Eldar", "Elthen", "Etran", "Eythil", "Fearlock", "Fenrirr", "Fildon", "Firdorn", "Florian", "Folmer", "Fronar", "Fydar", "Gai", "Galin", "Galiron", "Gametris", "Gauthus", "Gehardt", "Gemedes", "Gefirr", "Gibolt", "Geth", "Gom", "Gosform", "Gothar", "Gothor", "Greste", "Grim", "Gryni", "Gundir", "Gustov", "Halmar", "Haston", "Hectar", "Hecton", "Helmon", "Hermedes", "Hezaq", "Hildar", "Idon", "Ieli", "Ipdorn", "Ibfist", "Iroldak", "Ixen", "Ixil", "Izic", "Jamik", "Jethol", "Jihb", "Jibar", "Jhin", "Julthor", "Justahl", "Kafar", "Kaldar", "Kelar", "Keran", "Kib", "Kilden", "Kilbas", "Kildar", "Kimdar", "Kilder", "Koldof", "Kylrad", "Lackus", "Lacspor", "Lahorn", "Laracal", "Ledal", "Leith", "Lalfar", "Lerin", "Letor", "Lidorn", "Lich", "Loban", "Lox", "Ludok", "Ladok", "Lupin", "Lurd", "Mardin", "Markard", "Merklin", "Mathar", "Meldin", "Merdon", "Meridan", "Mezo", "Migorn", "Milen", "Mitar", "Modric", "Modum", "Madon", "Mafur", "Mujardin", "Mylo", "Mythik", "Nalfar", "Nadorn", "Naphazw", "Neowald", "Nildale", "Nizel", "Nilex", "Niktohal", "Niro", "Nothar", "Nathon", "Nadale", "Nythil", "Ozhar", "Oceloth", "Odeir", "Ohmar", "Orin", "Oxpar", "Othelen", "Padan", "Palid", "Palpur", "Peitar", "Pendus", "Penduhl", "Pildoor", "Puthor", "Phar", "Phalloz", "Qidan", "Quid", "Qupar", "Randar", "Raydan", "Reaper", "Relboron", "Riandur", "Rikar", "Rismak", "Riss", "Ritic", "Ryodan", "Rysdan", "Rythen", "Rythorn", "Sabalz", "Sadaron", "Safize", "Samon", "Samot", "Secor", "Sedar", "Senic", "Santhil", "Sermak", "Seryth", "Seth", "Shane", "Shard", "Shardo", "Shillen", "Silco", "Sildo", "Silpal", "Sithik", "Soderman", "Sothale", "Staph", "Suktar", "zuth", "Sutlin", "Syr", "Syth", "Sythril", "Talberon", "Telpur", "Temil", "Tamilfist", "Tempist", "Teslanar", "Tespan", "Tesio", "Thiltran", "Tholan", "Tibers", "Tibolt", "Thol", "Tildor", "Tilthan", "Tobaz", "Todal", "Tothale", "Touck", "Tok", "Tuscan", "Tusdar", "Tyden", "Uerthe", "Uhmar", "Uhrd", "Updar", "Uther", "Vacon", "Valker", "Valyn", "Vectomon", "Veldar", "Velpar", "Vethelot", "Vildher", "Vigoth", "Vilan", "Vildar", "Vi", "Vinkol", "Virdo", "Voltain", "Wanar", "Wekmar", "Weshin", "Witfar", "Wrathran", "Waytel", "Wathmon", "Wider", "Wyeth", "Xandar", "Xavor", "Xenil", "Xelx", "Xithyl", "Yerpal", "Yesirn", "Ylzik", "Zak", "Zek", "Zerin", "Zestor", "Zidar", "Zigmal", "Zilex", "Zilz", "Zio", "Zotar", "Zutar", "Zytan");
-            var prefix_male = elf_male;
-            var prefix_female = elf_female;
-            var suffix = elf_surname;
-            var n1m = parseInt(Math.random() * prefix_male.length);
-            var n1f = parseInt(Math.random() * prefix_female.length);
-            var n2 = parseInt(Math.random() * suffix.length);
-            var n2ekstra = parseInt(Math.random() * suffix.length);
-            var extraname = "extranahme";
-            var prename_male = prefix_male[n1m].slice(0, 1).toUpperCase() + prefix_male[n1m].slice(1);
-            var prename_female = prefix_female[n1f].slice(0, 1).toUpperCase() + prefix_female[n1f].slice(1);
-            var sufname = suffix[n2].slice(0, 1).toUpperCase() + suffix[n2].slice(1);
-            var extraname = suffix[n2ekstra].slice(0, 1).toUpperCase() + suffix[n2ekstra].slice(1);
-            var n3 = parseInt(Math.random() * 100);
-            if (n3 <= 40) {
-                name = prename_male + " " + sufname
-            } else if (n3 > 40 && n3 <= 70) {
-                name = prename_female + " " + sufname
-            }
-            return name;
-        }
 </script>

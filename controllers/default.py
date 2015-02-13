@@ -10,6 +10,8 @@
 #########################################################################
 
 def index():
+    response.files.insert(0,URL('static','css/pure-form.css'))
+    response.files.insert(1,URL('static','css/font-awesome.min.css'))
     """
     example action using the internationalization operator T and flash
     rendered by views/default/index.html or views/generic.html
@@ -69,3 +71,6 @@ def api():
         '<tablename>': {'GET':{},'POST':{},'PUT':{},'DELETE':{}},
         }
     return Collection(db).process(request,response,rules)
+
+def error():
+    return "Unauthorized user"

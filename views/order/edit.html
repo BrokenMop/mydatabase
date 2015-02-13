@@ -1,22 +1,66 @@
 {{extend 'layout.html'}}
 
-<h4>New Order</h4>
 
-<form  action="{{=URL('save')}}" method="POST">
-    <div class="row-fluid">
+<h4>Update Order</h4>
+
+<div id ="spin" style="position:fixed;top:50%;left:50%">
+     <img width: 50% margin: 0 auto src="{{=URL('static','images/spin.gif')}}"/>
+</div>
+
+<form id ="main"  action="{{=URL('update')}}" method="POST">
+        <input type="hidden" id="order-id" name="order-id" value="{{=order.id}}">
+
+        <div class="row-fluid">
                 <div class="span1" >
                     <div class="input-prepend">
-                        <button class="btn" type="submit">Submit <i class="icon-ok icon-black"></i></button>
+                         <button type="submit" >Update <i class="icon-ok icon-black"></i></button>
                     </div>
                  </div>
                  <div class="span1" >
                     <div class="input-prepend">
-                         <button class="btn" type="button" onclick="goBack()">Order List <i class="icon-list-alt icon-black"></i></button>
+                        <button type="button"  onclick="deleteOrder()">Delete <i class="icon-list-alt icon-black"></i></button>
+                    </div>
+                 </div>
+                <div class="span1" >
+                    <div class="input-prepend">
+                        
+                        <button type="button"   onclick="goBack()">Order List <i class="icon-plus icon-black"></i></button>
                     </div>
                  </div>
     </div>
 
-
+    <fieldset>
+        <legend>Status</legend>
+            <div class="row-fluid">
+                <div class="span3" >
+                    <div class="input-prepend">
+                        <label>Current Status</label>
+                         <select id="status" name="status"><option></option></select>
+                         <span class="add-on"><i class="icon-certificate icon-black"></i></span>
+                    </div>
+                </div>
+                <div class="span3" >
+                    <div class="input-prepend">
+                        <label>Receive Date</label>
+                        <input id="receive-date" name="receive-date" type="date" >
+                        <span class="add-on"><i class="icon-time icon-black"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <div class="span9">
+                    <div class="checkout-wrap">
+                        <ul class="checkout-bar">
+                            <li id="il-shipped" class="visited first">Shipped</a></li>
+                            <li id="il-customs-passed" class="previous visited">Customs Passed</li>
+                            <li id="il-delivered" class="active">Delivered </li>
+                            <li id="il-cofirmed" class="next">Confirmed</li>
+                            <li id="il-complete" class="">Complete</li>
+                         </ul>
+                    </div>
+                </div>
+            </div>
+         <br><br><br><br>
 
     <fieldset>
         <legend>Customer</legend>
@@ -134,8 +178,8 @@
                 </div>
                 <div class="span3" >
                     <div class="input-prepend">
-                        <label>Exchange Rate ({{=exchangeRatePulledDate}})</label>
-                        <input id="exchange-rate" name="exchange-rate" type="number" step="0.01" placeholder="Current Exchange Rate: {{=exchangeRatePulledDate}} "required>
+                        <label>Exchange Rate</label>
+                        <input id="exchange-rate" name="exchange-rate" type="number" step="0.01" required>
                         <span class="add-on"><strong>%</strong></span>
                     </div>
                 </div>
@@ -182,29 +226,19 @@
                     </div>
                 </div>
             </div>
-    <hr>
-    </fieldset>
-        <div class="row-fluid">
-                <div class="span1" >
-                    <div class="input-prepend">
-                        <button class="btn" type="submit">Submit <i class="icon-ok icon-black"></i></button>
-                    </div>
-                 </div>
-                 <div class="span1" >
-                    <div class="input-prepend">
-                         <button class="btn" type="button" onclick="goBack()">Order List <i class="icon-list-alt icon-black"></i></button>
-                    </div>
-                 </div>
-    </div>
 
+    <hr>
+
+    </fieldset>
 </form>
 
 
 <script>
 
 function goBack() {
-    window.location.href = "list";
+    window.history.back();
 }
+
 
 function calculateTotalCost(){
 
@@ -232,7 +266,10 @@ function calculateTotalCost(){
         $("#points").val(points*quantity);
     }
 
+
 $( document ).ready(function() {
+
+
 
    var options = ['北京', '上海', '广东', '江苏', '重庆','四川','陕西','山东',  '天津','江西','浙江',
                        '安徽', '河南', '山西','河北', '香港',  '湖南',
@@ -258,11 +295,86 @@ $( document ).ready(function() {
         select2.appendChild(el);
     {{pass}}
 
-    $('#reward')[0].selectedIndex = 1;
+    var select3 = document.getElementById("status");
+    {{for s in statusOptions:}}
+        var opt = '{{=s.name}}';
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = '{{=s.name}}';
+        select3.appendChild(el);
+    {{pass}}
 
-    $('#tax-rate').val("9");
+    // init values
+    $('#status').val('{{=order.status.name}}');
+    $('#customer-name').val("{{=order.customer_name}}");
+    $('#recipient-name').val("{{=order.recipient_name}}");
+    $('#comment-name').val("{{=order.order_comment}}");
+    $('#item').val("{{=order.item}}");
+    $('#quantity').val("{{=order.quantity}}");
+    $('#gifts-info').val("{{=order.gifts_info}}");
+    $('#rrp').val("{{=order.rrp}}");
+    $('#ship-rate').val("{{=order.ship_rate}}");
+    $('#sold-price').val("{{=order.price}}");
+    $('#exchange-rate').val("{{= order.exchange_rate}}");
+    $('#tax-rate').val("{{= order.tax_rate}}");
+    $('#reward').val('{{=order.reward.ratio}}');
+    $('#ship-date').val('{{=order.ship_date}}');
+    $('#ship-company').val('{{=order.ship_company}}');
+    $('#tracking').val('{{=order.tracking}}');
+    $('#destination').val('{{=order.order_destination}}');
+    $('#receive-date').val('{{=order.receive_date}}');
+    calculateTotalCost();
 
-    $('#exchange-rate').val("{{= exchangeRate}}");
+    if("{{=order.status.name}}" == "Not Shipped"){
+        $("#il-shipped").attr('class', 'next');
+        $("#il-customs-passed").attr('class', '');
+        $("#il-delivered").attr('class', '');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Customs"){
+        $("#il-shipped").attr('class', 'active');
+        $("#il-customs-passed").attr('class', 'next');
+        $("#il-delivered").attr('class', '');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+    
+    if("{{=order.status.name}}" == "Local"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'active');
+        $("#il-delivered").attr('class', 'next');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Delivered"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'active');
+        $("#il-cofirmed").attr('class', 'next');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Confirmed"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'previous visited');
+        $("#il-cofirmed").attr('class', 'active');
+        $("#il-complete").attr('class', 'next');
+    }
+
+     if("{{=order.status.name}}" == "Complete"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'previous visited');
+        $("#il-cofirmed").attr('class', 'previous visited');
+        $("#il-complete").attr('class', 'active');
+    }
+
+    
+
 
     $('#rrp').keyup(function() {
        calculateTotalCost();
@@ -293,6 +405,88 @@ $( document ).ready(function() {
     });
 
 
+    if("{{=order.status.name}}" == "Not Shipped"){
+        $("#il-shipped").attr('class', 'next');
+        $("#il-customs-passed").attr('class', '');
+        $("#il-delivered").attr('class', '');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Customs"){
+        $("#il-shipped").attr('class', 'active');
+        $("#il-customs-passed").attr('class', 'next');
+        $("#il-delivered").attr('class', '');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+    
+    if("{{=order.status.name}}" == "Local"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'active');
+        $("#il-delivered").attr('class', 'next');
+        $("#il-cofirmed").attr('class', '');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Delivered"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'active');
+        $("#il-cofirmed").attr('class', 'next');
+        $("#il-complete").attr('class', '');
+    }
+
+    if("{{=order.status.name}}" == "Confirmed"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'previous visited');
+        $("#il-cofirmed").attr('class', 'active');
+        $("#il-complete").attr('class', 'next');
+    }
+
+     if("{{=order.status.name}}" == "Complete"){
+        $("#il-shipped").attr('class', 'previous visited');
+        $("#il-customs-passed").attr('class', 'previous visited');
+        $("#il-delivered").attr('class', 'previous visited');
+        $("#il-cofirmed").attr('class', 'previous visited');
+        $("#il-complete").attr('class', 'active');
+    }
+
+       $('#spin').hide();
+
+
+
 });
+
+
+function deleteOrder(){
+        if (confirm("Are you sure to delete this order?") == true) {
+            $.ajax({
+            url: "{{=URL('delete')}}",
+            data: {"order-id": "{{=order.id}}"}, //returns all cells' data
+            type: 'POST',
+            beforeSend : function(res){
+                $('#spin').show();
+                $("#main input").prop("disabled", true);
+                $("#main select").prop("disabled", true);
+            },
+            complete : function(res){
+                $('#spin').hide();
+            },
+            success: function (res) {
+                window.location.href="list";
+            },
+            error: function () {
+                alert("An error has occurred");
+                window.location.href="list";
+            }
+          });
+         }
+}
+
+function goBack() {
+    window.history.back();
+}
 
 </script>
